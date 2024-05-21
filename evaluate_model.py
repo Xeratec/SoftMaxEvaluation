@@ -457,7 +457,7 @@ def train_activations(config, n_train, n_test, dataset, device, traced, dataload
 def IntergerizePass(model):
     model = RetracePass(PACT_symbolic_trace).apply(model)
     model = CustomAnnotateEpsPass(verbose = True).apply(model)
-    model = IntegerizeBNActPass().apply(model)
+    model = IntegerizeBNActPass(recenter_act=True, cmsis_requant=False, requant_node=True, skip_identity_rqs=False).apply(model)
     model = IntegerizeSoftmaxPass().apply(model)
     return model
 
