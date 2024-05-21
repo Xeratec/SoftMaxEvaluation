@@ -146,6 +146,7 @@ softmax_cfg = {
     "num_bins": 2**12,
     "rounding": True,
     "tqt": True,
+    "symm": True,
     "upper_percentile": UPPER_PERCENTILE,
     "act_kind": "identity",
 }
@@ -440,6 +441,14 @@ def train_activations(config, n_train, n_test, dataset, device, traced, dataload
 
                 if total >= num_train_examples:
                     break
+
+            if epoch == 0:
+                # WIESEP: Update clipping bounds for plotting
+                for m in act_list:
+                    actController.reset_clip_bounds(m, m.init_clip)
+
+            outputs = hi.propagate(epoch, inputs["input_ids"], inputs["attention_mask"], inputs["token_type_ids"])
+
             pbar_batch.close()
             print(f'Train [{epoch+1}/{EPOCHS}] -- Accuracy: {accuracy:.4f}')
         # ipdb.set_trace()

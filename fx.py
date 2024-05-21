@@ -206,11 +206,14 @@ class HistogramInterpreter:
                 m = self.modules[node.target]
                 result = m(*self.load_arg(node.args), **self.load_arg(node.kwargs))
                 if isinstance(m, qla.pact._PACTActivation):
-                    self.plot_histogram(m.histogram, m.clip_lo, m.clip_hi, node.name, epoch, m.truemin, m.truemax)
+                    if epoch == 0:
+                        m.updateClipBounds()
+                    self.plot_histogram(m.histogram, m.clip_lo, m.clip_hi, node.name, epoch, m.truemin, m.truemax, m)
+
             self.env[node.name] = result
         return result
 
-    def plot_histogram(self, histogram, clip_lo, clip_hi, node_name, epoch, truemin, truemax):
+    def plot_histogram(self, histogram, clip_lo, clip_hi, node_name, epoch, truemin, truemax, m):
         os.makedirs(f"./histograms/{epoch}", exist_ok=True)
         plt.figure()
         # Convert parameters to scalar values using .item()
@@ -226,6 +229,10 @@ class HistogramInterpreter:
         plt.axvline(x=clip_lo, color='red', label='Low Clip')
         plt.axvline(x=clip_hi, color='green', label='High Clip')
         plt.title(f"Histogram for Node {node_name} Epoch {epoch}")
+        # Make sure text can linebreak
+        text = str(m)
+        text = text.replace(',', '\n')
+        plt.text(0.05, 0.95, text, transform=plt.gca().transAxes, fontsize=6, verticalalignment='top')
         plt.xlabel('Activation Values')
         plt.ylabel('Counts')
         plt.legend()
